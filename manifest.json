@@ -1,0 +1,17 @@
+{
+    "name": "SCA Digital Cupping Form",
+    "short_name": "Cupping Form",
+    "start_url": "./index.html",
+    "display": "standalone",
+    "background_color": "#F9FAFB",
+    "theme_color": "#4F46E5",
+    "orientation": "portrait",
+    "icons": [
+        {
+            "src": "icon.svg",
+            "sizes": "512x512",
+            "type": "image/svg+xml",
+            "purpose": "any maskable"
+        }
+    ]
+}

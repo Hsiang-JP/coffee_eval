@@ -1,0 +1,1272 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Digital SCA Cupping Form</title>
+    <link rel="manifest" href="manifest.json">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Vue 3 -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+
+    <style>
+        /* Custom ranges for sliders */
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 16px;
+            width: 16px;
+            border-radius: 50%;
+            background: #4F46E5;
+            cursor: pointer;
+            margin-top: -4px;
+        }
+
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 8px;
+            cursor: pointer;
+            background: #E2E8F0;
+            border-radius: 4px;
+        }
+
+        .fade-enter-active,
+        .fade-leave-active {
+            transition: opacity 0.3s ease;
+        }
+
+        .fade-enter-from,
+        .fade-leave-to {
+            opacity: 0;
+        }
+
+        .text-shadow {
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50 text-slate-700 font-sans antialiased min-h-screen pb-24">
+
+    <div id="app" class="container mx-auto px-4 py-8 max-w-6xl">
+
+        <!-- HEADER -->
+        <header class="bg-white rounded-xl shadow-sm p-6 mb-6 border border-gray-100">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div>
+                    <h1 class="text-2xl font-bold text-slate-800 tracking-tight">
+                        <i class="fa-solid fa-mug-hot text-indigo-600 mr-2"></i>SCA Digital Cupping
+                    </h1>
+                    <p class="text-sm text-slate-500 mt-1">Professional Sensory Analysis Tool</p>
+                </div>
+
+                <div class="flex flex-wrap gap-4 w-full md:w-auto">
+                    <div class="flex-1 md:flex-none">
+                        <label class="block text-xs font-semibold text-slate-500 uppercase">Cupper Name</label>
+                        <input v-model="session.name" type="text"
+                            class="w-full md:w-48 bg-gray-50 border border-gray-200 rounded px-3 py-1 text-sm focus:outline-none focus:border-indigo-500"
+                            placeholder="Enter Name">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 uppercase">Table #</label>
+                        <input v-model="session.table" type="text"
+                            class="w-20 bg-gray-50 border border-gray-200 rounded px-3 py-1 text-sm focus:outline-none focus:border-indigo-500"
+                            placeholder="01">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 uppercase">Timestamp</label>
+                        <div
+                            class="bg-gray-50 border border-gray-200 rounded px-3 py-1 text-sm text-slate-600 min-w-[8rem]">
+                            {{ formattedDate }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- STATS BAR -->
+            <div class="mt-6 pt-4 border-t border-gray-100 flex justify-between items-center text-sm">
+                <div class="flex gap-6">
+                    <span class="font-medium text-slate-600">Total Samples: <strong class="text-indigo-600">{{
+                            session.samples.length }}</strong></span>
+                    <span class="font-medium text-slate-600" v-if="leadingScore > 0">Leading Score: <strong
+                            class="text-emerald-600">{{ leadingScore.toFixed(2) }}</strong></span>
+                </div>
+                <div class="flex gap-2">
+                    <button @click="showGuide = !showGuide"
+                        class="text-indigo-600 hover:text-indigo-800 font-medium transition-colors">
+                        <i class="fa-solid fa-book-open mr-1"></i> Protocol Guide
+                    </button>
+                    <span class="text-slate-300">|</span>
+                    <button @click="exportCSV"
+                        class="text-slate-600 hover:text-indigo-600 font-medium transition-colors">
+                        <i class="fa-solid fa-file-csv mr-1"></i> Export Data
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- CUPPING GUIDE (Accordion/Modal) -->
+        <transition name="fade">
+            <div v-if="showGuide" class="mb-6 bg-indigo-50 border border-indigo-100 rounded-xl p-6 relative">
+                <button @click="showGuide = false" class="absolute top-4 right-4 text-indigo-400 hover:text-indigo-700">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+                <h3 class="text-lg font-bold text-indigo-900 mb-4">SCA Cupping Protocol Quick Guide</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
+                    <div class="bg-white p-4 rounded-lg shadow-sm">
+                        <div class="font-bold text-indigo-600 mb-1">01. Grind & Fragrance</div>
+                        <p class="text-slate-600">8.25g coffee / 150ml water. Assess Dry Fragrance immediately.</p>
+                    </div>
+                    <div class="bg-white p-4 rounded-lg shadow-sm">
+                        <div class="font-bold text-indigo-600 mb-1">02. Pour & Break</div>
+                        <p class="text-slate-600">Pour 93°C water. Wait 4 min. Break crust w/ 3 gentle stirs. Assess Wet
+                            Aroma.</p>
+                    </div>
+                    <div class="bg-white p-4 rounded-lg shadow-sm">
+                        <div class="font-bold text-indigo-600 mb-1">03. Slurp (12-15m)</div>
+                        <p class="text-slate-600">At 60°C, slurp to spray. Assess Flavor & Aftertaste. Skim foam first.
+                        </p>
+                    </div>
+                    <div class="bg-white p-4 rounded-lg shadow-sm">
+                        <div class="font-bold text-indigo-600 mb-1">04. Cool & Final</div>
+                        <p class="text-slate-600">40°C: Acidity, Body, Balance. 20°C: Uniformity, Clean Cup, Sweetness.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </transition>
+
+        <!-- SAMPLE GRID -->
+        <div class="grid grid-cols-1 gap-6">
+            <sample-card v-for="(sample, index) in session.samples" :key="sample.id" :sample="sample" :index="index"
+                @update:sample="updateSample" @delete:sample="deleteSample"
+                @open-flavor="openFlavorWheel"></sample-card>
+
+            <!-- Add New Sample Button -->
+            <button @click="addSample"
+                class="border-2 border-dashed border-slate-300 rounded-xl p-8 flex flex-col items-center justify-center text-slate-400 hover:border-indigo-400 hover:text-indigo-600 hover:bg-white transition-all group">
+                <div
+                    class="w-12 h-12 rounded-full bg-slate-100 group-hover:bg-indigo-50 flex items-center justify-center mb-3 transition-colors">
+                    <i class="fa-solid fa-plus text-xl"></i>
+                </div>
+                <span class="font-medium">Add Coffee Sample</span>
+            </button>
+        </div>
+
+        <!-- FLAVOR WHEEL MODAL -->
+        <div v-if="activeFlavorSampleId"
+            class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-end md:items-center justify-center z-50 p-4"
+            @click.self="closeFlavorWheel">
+            <div
+                class="bg-white w-full max-w-lg rounded-t-2xl md:rounded-2xl shadow-xl overflow-hidden flex flex-col max-h-[90vh]">
+                <div class="p-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+                    <h3 class="font-bold text-slate-800">Flavor Tagger</h3>
+                    <button @click="closeFlavorWheel" class="text-slate-400 hover:text-slate-600">
+                        <i class="fa-solid fa-xmark text-xl"></i>
+                    </button>
+                </div>
+
+                <div class="p-4 overflow-y-auto flex-1">
+                    <!-- Breadcrumbs -->
+                    <div class="flex items-center gap-2 mb-6 text-sm overflow-x-auto pb-2">
+                        <button @click="resetFlavorPath"
+                            class="text-indigo-600 font-medium whitespace-nowrap">Top</button>
+                        <template v-for="(step, i) in flavorPath" :key="i">
+                            <span class="text-slate-400">/</span>
+                            <span class="font-medium text-slate-800 whitespace-nowrap">{{ step }}</span>
+                        </template>
+                    </div>
+
+                    <!-- Selection Grid or Detail View -->
+                    <div v-if="selectedLeaf" class="space-y-6">
+                        <div class="p-6 rounded-xl" :style="{ backgroundColor: selectedLeaf.color }"
+                            :class="getTextColor(selectedLeaf.color)">
+                            <h2 class="text-3xl font-bold mb-2">{{ selectedLeaf.name }}</h2>
+                            <div class="text-lg opacity-90">{{ selectedLeaf.definition }}</div>
+                        </div>
+
+                        <div class="bg-gray-50 rounded-xl p-6 border border-gray-100">
+                            <div class="mb-4">
+                                <h4 class="text-sm font-bold text-slate-400 uppercase mb-1">Sensory Reference</h4>
+                                <p class="text-slate-700 font-medium">{{ selectedLeaf.reference }}</p>
+                            </div>
+                            <div v-if="selectedLeaf.intensity">
+                                <h4 class="text-sm font-bold text-slate-400 uppercase mb-1">Intensity</h4>
+                                <p class="text-slate-700 font-medium">{{ selectedLeaf.intensity }}</p>
+                            </div>
+                        </div>
+
+                        <div class="flex gap-3">
+                            <button @click="selectedLeaf = null"
+                                class="flex-1 py-3 rounded-lg font-bold border border-slate-200 text-slate-600 hover:bg-gray-50">
+                                Back
+                            </button>
+                            <button @click="confirmSelection(selectedLeaf)"
+                                class="flex-1 py-3 rounded-lg font-bold bg-indigo-600 text-white hover:bg-indigo-700 shadow-lg shadow-indigo-200">
+                                Select Flavor
+                            </button>
+                        </div>
+                    </div>
+
+                    <div v-else class="grid grid-cols-2 gap-3">
+                        <button v-for="option in currentFlavorOptions" :key="option.name"
+                            @click="selectFlavorOption(option)"
+                            class="p-4 rounded-lg text-left transition-all border border-black/10 hover:shadow-md hover:scale-[1.02]"
+                            :style="{ backgroundColor: option.color }" :class="[getTextColor(option.color)]">
+                            <span class="font-semibold block">{{ option.name }}</span>
+                            <i v-if="option.children && option.children.length"
+                                class="fa-solid fa-chevron-right text-xs opacity-50 mt-1 float-right"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        const { createApp, ref, computed, onMounted, watch } = Vue;
+
+        // --- Data ---
+        // Source: SCA Coffee Taster's Flavor Wheel 2016
+        const FLAVOR_DATA = [
+            {
+                "name": "roasted",
+                "color": "#d33727",
+                "children": [
+                    {
+                        "name": "pipe tobacco",
+                        "color": "#a49663",
+                        "definition": "The brown, sweet, slightly pungent, fruity, floral, spicy aromatic associated with cured tobacco."
+                    },
+                    {
+                        "name": "tobacco",
+                        "color": "#cfb480",
+                        "definition": "Brown, slightly sweet, slightly pungent aromatic.",
+                        "reference": "Camel Cigarettes (Turkish & Domestic)",
+                        "preparation": "Break cigarette and place 0.1g tobacco in snifter."
+                    },
+                    {
+                        "name": "burnt",
+                        "color": "#b6804d",
+                        "children": [
+                            {
+                                "name": "acrid",
+                                "color": "#b0a068",
+                                "definition": "The sharp, pungent, bitter, acidic aromatic associated with products that are excessively roasted or browned."
+                            },
+                            {
+                                "name": "ashy",
+                                "color": "#94a993",
+                                "definition": "Dry, dusty, dirty, smoky aromatic associated with burnt residue.",
+                                "reference": "Paper ashes",
+                                "preparation": "Burn white paper, place ashes in jar."
+                            },
+                            {
+                                "name": "smoky",
+                                "color": "#a97f34",
+                                "definition": "The wood aromatic associated with burning wood, wood smoke, or wood ashes.",
+                                "reference": "Benzyl disulfide (Aroma: 12), Wood ashes (Aroma: 7.5), Smoked Almonds (Flavor: 9)",
+                                "intensity": "7.5 - 12"
+                            },
+                            {
+                                "name": "brown, roast",
+                                "color": "#835621",
+                                "definition": "A rich, full, round aromatic impression always characterized as some degree of darkness, generally associated with attributes such as toasted, nutty, roasted, and sweet."
+                            }
+                        ],
+                        "definition": "The dark brown impression of an over-cooked or over-roasted product that can be sharp, bitter, and sour."
+                    },
+                    {
+                        "name": "cereal",
+                        "color": "#e4bd2d",
+                        "children": [
+                            {
+                                "name": "grain",
+                                "color": "#d0a588",
+                                "definition": "The light brown, dusty, musty, sweet aromatic associated with grains."
+                            },
+                            {
+                                "name": "malt",
+                                "color": "#ec9b65",
+                                "definition": "The light brown, dusty, musty, sweet, sour and or slightly fermented aromatic associated with grains."
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "name": "spices",
+                "color": "#b90d41",
+                "children": [
+                    {
+                        "name": "pungent",
+                        "color": "#734864",
+                        "definition": "A sharp, physically penetrating sensation in the nasal cavity."
+                    },
+                    {
+                        "name": "pepper",
+                        "color": "#bc4747",
+                        "definition": "Spicy, pungent, musty, woody aromatic.",
+                        "reference": "McCormick Ground Black Pepper",
+                        "preparation": "Place 1/2 teaspoon pepper in a medium snifter."
+                    },
+                    {
+                        "name": "brown spice",
+                        "color": "#be404c",
+                        "children": [
+                            {
+                                "name": "anise",
+                                "color": "#c99f19",
+                                "definition": "A pungent, sweet, brown, caramelized aromatic that may contain petroleum, medicinal, and floral notes."
+                            },
+                            {
+                                "name": "nutmeg",
+                                "color": "#a61619",
+                                "definition": "A wet, brown, woody, pungent, petroleum-like, heavy aromatic with a slightly lemony impression."
+                            },
+                            {
+                                "name": "cinnamon",
+                                "color": "#e6922f",
+                                "definition": "A sweet, brown, slightly woody, slightly pungent, spicy aromatic."
+                            },
+                            {
+                                "name": "clove",
+                                "color": "#b5796e",
+                                "definition": "A sweet, brown, spicy, pungent, floral, citrus, medicinal, and slightly minty aromatic."
+                            }
+                        ],
+                        "definition": "The sweet, brown aromatic associated with spices such as cinnamon, clove, nutmeg, and allspice."
+                    }
+                ]
+            },
+            {
+                "name": "nutty/cocoa",
+                "color": "#9a7b79",
+                "children": [
+                    {
+                        "name": "nutty",
+                        "color": "#b59287",
+                        "children": [
+                            {
+                                "name": "peanuts",
+                                "color": "#e4b509",
+                                "definition": "Sweet, light brown, oily, somewhat musty/dusty aromatic.",
+                                "reference": "Raw blanched bulk peanuts (Roasted)",
+                                "preparation": "Roast at 425\u00b0F for 10 mins. Chop and serve."
+                            },
+                            {
+                                "name": "hazelnut",
+                                "color": "#935f21",
+                                "definition": "Woody, brown, sweet, musty/earthy, slightly cedar aromatic.",
+                                "reference": "McCormick Imitation Hazelnut Extract",
+                                "preparation": "1/4 teaspoon extract in 1 cup of whole milk."
+                            },
+                            {
+                                "name": "almond",
+                                "color": "#d9a99c",
+                                "definition": "Sweet, light brown, woody, and buttery aromatic.",
+                                "reference": "Le Nez du Caf\u00e9 no. 27 'Roasted Almonds'",
+                                "preparation": "Place 1 drop of essence on a cotton ball."
+                            }
+                        ],
+                        "definition": "A slightly sweet, brown, woody, oily, musty, astringent, and bitter aromatic commonly associated with nuts, seeds, beans, and grains."
+                    },
+                    {
+                        "name": "cocoa",
+                        "color": "#b37122",
+                        "children": [
+                            {
+                                "name": "chocolate",
+                                "color": "#6b271f",
+                                "definition": "A blend of cocoa, including cocoa butter and dark roast aromatics at varying intensities."
+                            },
+                            {
+                                "name": "dark chocolate",
+                                "color": "#4a271d",
+                                "definition": "A high-intensity blend of cocoa and cocoa butter that may include dark roast, spicy, burnt, and musty notes with increased astringency and bitterness."
+                            }
+                        ],
+                        "definition": "A brown, sweet, dusty, musty, often bitter aromatic associated with cocoa bean, powdered cocoa and chocolate bars."
+                    }
+                ]
+            },
+            {
+                "name": "sweet",
+                "color": "#f36421",
+                "children": [
+                    {
+                        "name": "brown sugar",
+                        "color": "#ce7c92",
+                        "children": [
+                            {
+                                "name": "molasses",
+                                "color": "#230007",
+                                "definition": "Dark, caramelized top notes; slightly sharp/acrid.",
+                                "reference": "Grandma's Original Molasses (Unsulphured)",
+                                "preparation": "Mix 2 tsp molasses in 250ml water."
+                            },
+                            {
+                                "name": "maple syrup",
+                                "color": "#d85e25",
+                                "definition": "A woody, sweet, caramelized, brown, slightly green aromatic associated with maple syrup."
+                            },
+                            {
+                                "name": "caramelized",
+                                "color": "#e2a227",
+                                "definition": "A round, full-bodied, medium brown, sweet aromatic associated with cooked sugars and other carbohydrates."
+                            },
+                            {
+                                "name": "honey",
+                                "color": "#f47e2a",
+                                "definition": "Sweet, light brown, slightly spicy aromatic.",
+                                "reference": "Busy Bee Pure Clover Honey",
+                                "preparation": "Dissolve 1 tbsp honey in 250ml hot water."
+                            }
+                        ],
+                        "definition": "A rich, full, round, sweet aromatic impression characterized by some degree of darkness."
+                    },
+                    {
+                        "name": "vanilla",
+                        "color": "#f6997d",
+                        "definition": "Woody, slightly chemical aromatic associated with vanilla bean.",
+                        "reference": "McCormick Pure Vanilla Extract",
+                        "preparation": "Stir 1/8 tsp extract into 1/2 cup whole milk."
+                    },
+                    {
+                        "name": "vanillin",
+                        "color": "#f38088",
+                        "definition": "An extremely sweet, non-natural aromatic associated with vanilla, cotton candy, and marshmallows."
+                    },
+                    {
+                        "name": "overall sweet",
+                        "color": "#de707a",
+                        "definition": "The perception of a combination of sweet taste and aromatics."
+                    },
+                    {
+                        "name": "sweet aromatics",
+                        "color": "#ce3e6c",
+                        "definition": "An aromatic associated with the impression of a sweet substance."
+                    }
+                ],
+                "definition": "A fundamental taste factor of which sucrose is typical."
+            },
+            {
+                "name": "floral",
+                "color": "#ec008c",
+                "children": [
+                    {
+                        "name": "black tea",
+                        "color": "#ae667d",
+                        "definition": "A somewhat brown, musty, dried plant and dried bark aromatic associated with the oxidization of tea leaves."
+                    },
+                    {
+                        "name": "floral",
+                        "color": "#f05794",
+                        "children": [
+                            {
+                                "name": "chamomile",
+                                "color": "#fbaf25",
+                                "definition": "The sweet, slightly floral/fruity, somewhat woody green associated with chamomile."
+                            },
+                            {
+                                "name": "rose",
+                                "color": "#e472a7",
+                                "definition": "Sweet, soft, slightly musty/dusty floral fragrance.",
+                                "reference": "Rose water",
+                                "preparation": "Place 2 drops of rose water on a cotton ball."
+                            },
+                            {
+                                "name": "jasmine",
+                                "color": "#f8f7e5",
+                                "definition": "Intense, slightly pungent, sweet, floral aromatic.",
+                                "reference": "Jasmine extract",
+                                "preparation": "Place 1 drop of extract on a cotton ball in a snifter."
+                            }
+                        ],
+                        "definition": "A sweet, light, slightly fragrant aromatic associated with fresh flowers."
+                    }
+                ],
+                "definition": "A sweet, light, slightly fragrant aromatic associated with fresh flowers."
+            },
+            {
+                "name": "fruity",
+                "color": "#ee1d23",
+                "children": [
+                    {
+                        "name": "berry",
+                        "color": "#ed2c4b",
+                        "children": [
+                            {
+                                "name": "blackberry",
+                                "color": "#090819",
+                                "definition": "The sweet, dark, fruity, floral, slightly sour, somewhat woody aromatic associated with blackberries.",
+                                "reference": "Smucker's Blackberry Jam",
+                                "intensity": "7.5",
+                                "preparation": "Serve jam in a 1-ounce cup. Cover with a plastic lid."
+                            },
+                            {
+                                "name": "raspberry",
+                                "color": "#e32487",
+                                "definition": "The lightly sweet, fruity, floral, slightly sour and musty aromatic associated with raspberries."
+                            },
+                            {
+                                "name": "blueberry",
+                                "color": "#666aac",
+                                "definition": "The dark, fruity, slightly sweet, slightly floral aromatic associated with blueberries.",
+                                "reference": "Blueberries (Flavor: 6.0)",
+                                "intensity": "6.0"
+                            },
+                            {
+                                "name": "strawberry",
+                                "color": "#ee293b",
+                                "definition": "Sweet, slightly sour, floral, fruity aromatic associated with strawberry.",
+                                "reference": "Dole Whole Strawberries (Frozen)",
+                                "preparation": "Thaw strawberries. Serve at room temperature in cup."
+                            }
+                        ],
+                        "definition": "Sweet, sour, floral aromatic associated with berries.",
+                        "reference": "Private Selection Triple Berry Preserves",
+                        "preparation": "Place 1 teaspoon in a 1-ounce cup. Cover with a plastic lid."
+                    },
+                    {
+                        "name": "dried fruit",
+                        "color": "#d7444f",
+                        "children": [
+                            {
+                                "name": "raisin",
+                                "color": "#9e1e79",
+                                "definition": "The concentrated, sweet, somewhat sour, brown, fruity, floral aromatic characteristic of dried grapes."
+                            },
+                            {
+                                "name": "prune",
+                                "color": "#85558f",
+                                "definition": "The sweet, slightly brown, floral, musty and overripe aromatic impression of dark fruit associated with dried plums."
+                            }
+                        ],
+                        "definition": "An aromatic impression of dark fruit that is sweet and slightly brown and is associated with dried plums and raisins."
+                    },
+                    {
+                        "name": "other fruit",
+                        "color": "#f26648",
+                        "children": [
+                            {
+                                "name": "coconut",
+                                "color": "#e48e2a",
+                                "definition": "Slightly sweet, nutty, somewhat woody aromatic.",
+                                "reference": "Coconut imitation extract",
+                                "preparation": "Place 1 drop of coconut extract on a cotton ball in a snifter."
+                            },
+                            {
+                                "name": "cherry",
+                                "color": "#e71158",
+                                "definition": "The sour, fruity, slightly bitter, floral aromatic associated with cherries."
+                            },
+                            {
+                                "name": "pomegranate",
+                                "color": "#ef4b60",
+                                "definition": "A sour, sweet fruity aromatic that may be somewhat dark, musty and earthy, reminiscent of dark fruits and root vegetables such as beets and carrots."
+                            },
+                            {
+                                "name": "pineapple",
+                                "color": "#f89d1c",
+                                "definition": "The sweet, slightly sharp, fruity aromatic associated with pineapple."
+                            },
+                            {
+                                "name": "grape",
+                                "color": "#9ec536",
+                                "definition": "The sweet, fruity, floral, slightly sour, musty aromatic commonly associated with grapes."
+                            },
+                            {
+                                "name": "apple",
+                                "color": "#69c071",
+                                "definition": "A sweet, light, fruity, somewhat floral aromatic commonly associated with fresh or processed apples."
+                            },
+                            {
+                                "name": "peach",
+                                "color": "#f37f51",
+                                "definition": "The floral, perfuming, fruity, sweet, slightly sour aromatic associated with peaches."
+                            },
+                            {
+                                "name": "pear",
+                                "color": "#b2aa1e",
+                                "definition": "The sweet, slightly floral, musty, woody, fruity aromatic associated with pears."
+                            }
+                        ],
+                        "definition": "A sweet, light, fruity, somewhat floral, sour, or green aromatic that may include apples, grapes, peaches, pears, or cherries."
+                    },
+                    {
+                        "name": "citrus fruit",
+                        "color": "#fcb914",
+                        "children": [
+                            {
+                                "name": "grapefruit",
+                                "color": "#f05a5e",
+                                "definition": "The citric, sour, bitter, astringent, peely, sharp, slightly sweet aromatic associated with grapefruit."
+                            },
+                            {
+                                "name": "orange",
+                                "color": "#f47921",
+                                "definition": "Citric, sweet, floral, slightly sour aromatic associated with oranges.",
+                                "reference": "Tropicana Pure Premium Original 100% No Pulp",
+                                "preparation": "Serve juice in a 1-ounce cup. Cover with a plastic lid."
+                            },
+                            {
+                                "name": "lemon",
+                                "color": "#f5da02",
+                                "definition": "The citric, sour, astringent, slightly sweet, peely and somewhat floral aromatic associated with lemon."
+                            },
+                            {
+                                "name": "lime",
+                                "color": "#91c355",
+                                "definition": "The citric, sour, astringent, bitter, green, peely, sharp and somewhat floral aromatic associated with limes."
+                            }
+                        ],
+                        "definition": "A citric, sour, astringent, slightly sweet, peely, and somewhat floral aromatic that may include lemons, limes, grapefruits, or oranges."
+                    }
+                ],
+                "definition": "A sweet, floral, aromatic blend of a variety of ripe fruits."
+            },
+            {
+                "name": "sour/fermented",
+                "color": "#f5ce02",
+                "children": [
+                    {
+                        "name": "sour",
+                        "color": "#e2d925",
+                        "children": [
+                            {
+                                "name": "sour aromatics",
+                                "color": "#c0bd1e",
+                                "definition": "An aromatic associated with the impression of a sour product."
+                            },
+                            {
+                                "name": "acetic acid",
+                                "color": "#9fc78a",
+                                "definition": "A sour, astringent, slightly pungent aromatic associated with vinegar."
+                            },
+                            {
+                                "name": "butyric acid",
+                                "color": "#d6c509",
+                                "definition": "A sour, fermented-dairy aromatic associated with certain aged cheeses such as Parmesan."
+                            },
+                            {
+                                "name": "isovaleric acid",
+                                "color": "#71c05a",
+                                "definition": "A pungent, sour aromatic associated with sweaty, perspiration-generated foot odor and certain aged cheeses such as Romano."
+                            },
+                            {
+                                "name": "citric acid",
+                                "color": "#e4d711",
+                                "definition": "A mild, clean, sour aromatic with slight citrus notes accompanied by astringency."
+                            },
+                            {
+                                "name": "malic acid",
+                                "color": "#b4c425",
+                                "definition": "A sour, sharp, somewhat fruity aromatic accompanied by astringency."
+                            }
+                        ],
+                        "definition": "The fundamental taste factor associated with a citric acid solution."
+                    },
+                    {
+                        "name": "alcohol/fermented",
+                        "color": "#b2a113",
+                        "children": [
+                            {
+                                "name": "winey",
+                                "color": "#a50a71",
+                                "definition": "The sharp, pungent, somewhat fruity, alcohol-like aromatic associated with wine."
+                            },
+                            {
+                                "name": "whiskey",
+                                "color": "#b03a53",
+                                "definition": "The aromatic associated with distilled products from fermented grain mash."
+                            },
+                            {
+                                "name": "fermented",
+                                "color": "#d2a808",
+                                "definition": "The pungent, sweet, slightly sour, sometimes yeasty, alcohol-like aromatic characteristic of fermented fruits or sugar or over-proofed dough."
+                            },
+                            {
+                                "name": "overripe",
+                                "color": "#7e7029",
+                                "definition": "The sweet, slightly sour, damp, musty/earthy aromatic characteristic of fruit or vegetable past their optimum ripeness."
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "name": "green/vegetative",
+                "color": "#17803b",
+                "children": [
+                    {
+                        "name": "olive oil",
+                        "color": "#a0b127",
+                        "definition": "Light, oily aromatic which may have buttery, green, peppery, bitter notes.",
+                        "reference": "Bertolli Extra Virgin Olive Oil",
+                        "preparation": "Put 1 tablespoon in a medium snifter. Cover."
+                    },
+                    {
+                        "name": "raw",
+                        "color": "#6c8c39",
+                        "definition": "An aromatic associated with uncooked products."
+                    },
+                    {
+                        "name": "green/vegetative",
+                        "color": "#21b252",
+                        "children": [
+                            {
+                                "name": "under-ripe",
+                                "color": "#aaca47",
+                                "definition": "An aromatic found in green/under-ripe fruit."
+                            },
+                            {
+                                "name": "peapod",
+                                "color": "#47b44a",
+                                "definition": "Green aromatic that is sweet, beany, fresh, raw, and musty/earthy.",
+                                "reference": "Le Nez du Caf\u00e9 no. 3 'Garden Peas'",
+                                "preparation": "Place 1 drop of essence on a cotton ball in a large snifter."
+                            },
+                            {
+                                "name": "fresh",
+                                "color": "#00ab6f",
+                                "definition": "A green aromatic associated with newly cut grass and leafy plants, characterized by a sweet and pungent character."
+                            },
+                            {
+                                "name": "dark green",
+                                "color": "#00603d",
+                                "definition": "The aromatic commonly associated with cooked green vegetables such as spinach, kale, or green beans that may include bitter, sweet, dusty, musty, or earthy elements."
+                            },
+                            {
+                                "name": "vegetative",
+                                "color": "#1eb26a",
+                                "definition": "Sharp, slightly pungent aromatic associated with green plant or vegetable matter such as parsley, spinach, or peapod."
+                            },
+                            {
+                                "name": "hay-like",
+                                "color": "#9fa122",
+                                "definition": "The lightly sweet, dry, dusty aromatic with slight green character associated with dry grasses."
+                            },
+                            {
+                                "name": "herb-like",
+                                "color": "#79c359",
+                                "definition": "The aromatic commonly associated with green herbs that may be characterized as sweet, slightly pungent, and slightly bitter."
+                            }
+                        ]
+                    },
+                    {
+                        "name": "beany",
+                        "color": "#6f9f95",
+                        "definition": "An aromatic characteristic of beans and bean products that contains musty/earthy, musty/dusty, sour aromatic, bitter aromatic, starchy, and green/peapod, nutty or brown elements."
+                    }
+                ]
+            },
+            {
+                "name": "other",
+                "color": "#00a7d2",
+                "children": [
+                    {
+                        "name": "chemical",
+                        "color": "#61c6dd",
+                        "children": [
+                            {
+                                "name": "bitter",
+                                "color": "#6fc9bf",
+                                "definition": "The fundamental taste factor associated with a caffeine solution."
+                            },
+                            {
+                                "name": "salty",
+                                "color": "#ced2ca",
+                                "definition": "A fundamental taste factor of which sodium chloride is typical."
+                            },
+                            {
+                                "name": "medicinal",
+                                "color": "#61a8c4",
+                                "definition": "A clean, sterile aromatic characteristic of antiseptic-like products such as Band-Aids, alcohol, and iodine."
+                            },
+                            {
+                                "name": "petroleum",
+                                "color": "#00a9c1",
+                                "definition": "A specific chemical aromatic associated with crude oil and its refined products, which have heavy oil characteristics."
+                            },
+                            {
+                                "name": "skunky",
+                                "color": "#5c8296",
+                                "definition": "Aromatics associated with skunks.",
+                                "reference": "Latex balloon",
+                                "preparation": "Place 2 balloons in a glass jar."
+                            },
+                            {
+                                "name": "rubber",
+                                "color": "#001631",
+                                "definition": "Dark, heavy, slightly sharp, pungent aromatic.",
+                                "reference": "A&W Rubber Bands",
+                                "preparation": "Place 10g of rubber bands in a snifter."
+                            }
+                        ]
+                    },
+                    {
+                        "name": "papery/musty",
+                        "color": "#9bbccc",
+                        "children": [
+                            {
+                                "name": "stale",
+                                "color": "#657d6b",
+                                "definition": "The aromatic characterized by a lack of freshness."
+                            },
+                            {
+                                "name": "cardboard",
+                                "color": "#dac346",
+                                "definition": "The aromatic associated with cardboard or paper packaging."
+                            },
+                            {
+                                "name": "papery",
+                                "color": "#ffffff",
+                                "definition": "The aromatic associated with white paper cups."
+                            },
+                            {
+                                "name": "woody",
+                                "color": "#725c26",
+                                "definition": "The sweet, brown, musty, dark aromatic associated with a bark of a tree."
+                            },
+                            {
+                                "name": "moldy/damp",
+                                "color": "#a1ac74",
+                                "definition": "The aromatic associated with damp, closed spaces or basements. May be musty, sharp, and slightly green."
+                            },
+                            {
+                                "name": "musty/dusty",
+                                "color": "#caa669",
+                                "definition": "The aromatic associated with dry, closed-air spaces such as attics and closets."
+                            },
+                            {
+                                "name": "musty/earthy",
+                                "color": "#948547",
+                                "definition": "The somewhat sweet, heavy aromatic associated with decaying vegetation and damp, black soil."
+                            },
+                            {
+                                "name": "animalic",
+                                "color": "#a0a277",
+                                "definition": "A combination of the aromatics associated with farm animals and live-animal habitation."
+                            },
+                            {
+                                "name": "meaty brothy",
+                                "color": "#cb817a",
+                                "definition": "The aromatic associated with boiled meat, soup, or stock, with weak meaty notes."
+                            },
+                            {
+                                "name": "phenolic",
+                                "color": "#e97e89",
+                                "definition": "The aromatic described as damp, musty, and like animal hide. Reminiscent of a tack room."
+                            }
+                        ]
+                    }
+                ]
+            }
+        ];
+
+        // --- Components ---
+
+        const SampleCard = {
+            props: ['sample', 'index'],
+            emits: ['update:sample', 'delete:sample', 'open-flavor'],
+            setup(props, { emit }) {
+                const scoreColor = computed(() => {
+                    const s = props.sample.totalScore;
+                    if (s >= 90) return 'text-purple-600 bg-purple-50 border-purple-200';
+                    if (s >= 85) return 'text-amber-600 bg-amber-50 border-amber-200';
+                    if (s >= 80) return 'text-emerald-600 bg-emerald-50 border-emerald-200';
+                    return 'text-slate-600 bg-slate-50 border-slate-200';
+                });
+
+                const attributes = [
+                    { key: 'fragrance', label: 'Fragrance/Aroma' },
+                    { key: 'flavor', label: 'Flavor' },
+                    { key: 'aftertaste', label: 'Aftertaste' },
+                    { key: 'acidity', label: 'Acidity' },
+                    { key: 'body', label: 'Body' },
+                    { key: 'balance', label: 'Balance' },
+                    { key: 'overall', label: 'Overall' },
+                ];
+
+                const boolAttributes = [
+                    { key: 'uniformity', label: 'Uniformity' },
+                    { key: 'cleanCup', label: 'Clean Cup' },
+                    { key: 'sweetness', label: 'Sweetness' }
+                ];
+
+                const toggleBool = (attrKey, idx) => {
+                    const newArr = [...props.sample.scores[attrKey]];
+                    newArr[idx] = !newArr[idx];
+
+                    const updatedSample = { ...props.sample };
+                    updatedSample.scores[attrKey] = newArr;
+
+                    updateScore(updatedSample);
+                };
+
+                const updateDefectCups = (e) => {
+                    const val = parseInt(e.target.value);
+                    const updatedSample = { ...props.sample };
+                    updatedSample.defects.cups = val;
+                    updateScore(updatedSample);
+                };
+
+                const updateDefectIntensity = (val) => {
+                    const updatedSample = { ...props.sample };
+                    updatedSample.defects.intensity = val;
+                    updateScore(updatedSample);
+                };
+
+                const updateSlider = (attr, val) => {
+                    const updatedSample = { ...props.sample };
+                    updatedSample.scores[attr] = parseFloat(val);
+                    updateScore(updatedSample);
+                }
+
+                const updateScore = (s) => {
+                    // Calculate Total
+                    let total = 0;
+                    // Sliders
+                    attributes.forEach(a => total += s.scores[a.key]);
+                    // Booleans (Each checked = 2 points)
+                    boolAttributes.forEach(b => {
+                        const count = s.scores[b.key].filter(x => x).length;
+                        total += (count * 2);
+                    });
+                    // Defects (Subtracted)
+                    total -= (s.defects.cups * s.defects.intensity);
+
+                    s.totalScore = total;
+                    emit('update:sample', s);
+                };
+
+                return { scoreColor, attributes, boolAttributes, toggleBool, updateDefectCups, updateDefectIntensity, updateSlider };
+            },
+            template: `
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                <!-- Card Header -->
+                <div class="p-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+                    <div class="flex items-center gap-3">
+                        <span class="bg-slate-800 text-white font-bold w-8 h-8 flex items-center justify-center rounded-lg">#{{ sample.id }}</span>
+                        <input type="text" v-model="sample.name" placeholder="Sample Name / Origin" class="bg-transparent font-bold text-slate-800 placeholder-slate-400 focus:outline-none focus:bg-white focus:ring-2 ring-indigo-100 rounded px-2 py-1 w-48 md:w-64">
+                    </div>
+                    <div class="flex items-center gap-4">
+                        <div class="px-4 py-1.5 rounded-full border font-bold text-lg min-w-[5rem] text-center" :class="scoreColor">
+                            {{ sample.totalScore.toFixed(2) }}
+                        </div>
+                        <button @click="$emit('delete:sample', index)" class="text-slate-300 hover:text-red-500 transition-colors">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="p-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
+                        <!-- Column 1: Sliders -->
+                        <div class="space-y-5">
+                            <div v-for="attr in attributes" :key="attr.key">
+                                <div class="flex justify-between mb-1.5">
+                                    <label class="font-semibold text-sm text-slate-600">{{ attr.label }}</label>
+                                    <span class="font-mono text-sm font-bold text-indigo-600">{{ sample.scores[attr.key].toFixed(2) }}</span>
+                                </div>
+                                <input 
+                                    type="range" 
+                                    min="6.00" 
+                                    max="10.00" 
+                                    step="0.25" 
+                                    :value="sample.scores[attr.key]" 
+                                    @input="updateSlider(attr.key, $event.target.value)"
+                                    class="w-full h-2 bg-slate-100 rounded-lg appearance-none cursor-pointer"
+                                >
+                            </div>
+                        </div>
+
+                        <!-- Column 2: Booleans & Defects -->
+                        <div class="space-y-8">
+                            <!-- Uniformity / Clean Cup / Sweetness -->
+                            <div v-for="attr in boolAttributes" :key="attr.key" class="bg-gray-50 p-4 rounded-lg">
+                                <label class="block font-semibold text-sm text-slate-600 mb-3">{{ attr.label }} (2pts each)</label>
+                                <div class="flex gap-2">
+                                    <button 
+                                        v-for="(checked, i) in sample.scores[attr.key]" 
+                                        :key="i"
+                                        @click="toggleBool(attr.key, i)"
+                                        class="w-8 h-8 rounded border-2 flex items-center justify-center transition-all duration-200"
+                                        :class="checked ? 'bg-indigo-600 border-indigo-600 text-white' : 'bg-white border-slate-200 text-transparent hover:border-indigo-300'"
+                                    >
+                                        <i class="fa-solid fa-check text-xs"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Defects -->
+                            <div class="border-2 border-red-50 bg-red-50/30 rounded-lg p-4">
+                                <label class="block font-bold text-xs text-red-800 uppercase mb-3"><i class="fa-solid fa-triangle-exclamation mr-1"></i>Defects</label>
+                                <div class="flex items-center gap-4 mb-3">
+                                    <div class="flex-1">
+                                        <span class="text-xs text-slate-500 block mb-1"># Cups</span>
+                                        <input type="number" min="0" max="5" :value="sample.defects.cups" @input="updateDefectCups" class="w-full border-gray-200 rounded px-2 py-1 text-sm">
+                                    </div>
+                                    <div class="flex-1">
+                                         <span class="text-xs text-slate-500 block mb-1">Intensity</span>
+                                         <div class="flex bg-white rounded border border-gray-200 overflow-hidden">
+                                             <button @click="updateDefectIntensity(2)" class="flex-1 py-1 text-xs font-medium" :class="sample.defects.intensity === 2 ? 'bg-red-100 text-red-700' : 'hover:bg-gray-50'">Taint (2)</button>
+                                             <div class="w-px bg-gray-200"></div>
+                                             <button @click="updateDefectIntensity(4)" class="flex-1 py-1 text-xs font-medium" :class="sample.defects.intensity === 4 ? 'bg-red-100 text-red-700' : 'hover:bg-gray-50'">Fault (4)</button>
+                                         </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Flavor Tags -->
+                            <div>
+                                <label class="block font-semibold text-sm text-slate-600 mb-2">Flavor Notes</label>
+                                <div class="flex flex-wrap gap-2 mb-2">
+                                    <span v-for="(tag, i) in sample.tags" :key="i" class="bg-indigo-50 text-indigo-700 px-2 py-1 rounded text-xs font-medium border border-indigo-100 flex items-center gap-1">
+                                        {{ tag }}
+                                        <button @click="sample.tags.splice(i, 1)" class="hover:text-indigo-900"><i class="fa-solid fa-xmark"></i></button>
+                                    </span>
+                                    <button @click="$emit('open-flavor', sample.id)" class="px-3 py-1 bg-white border border-dashed border-slate-300 rounded text-xs text-slate-500 hover:border-indigo-400 hover:text-indigo-600 transition-colors">
+                                        + Add Note
+                                    </button>
+                                </div>
+                            </div>
+
+                             <!-- Notes -->
+                             <textarea v-model="sample.notes" rows="2" class="w-full bg-white border border-gray-200 rounded-lg p-3 text-sm focus:ring-2 ring-indigo-100 focus:border-indigo-400 focus:outline-none" placeholder="Sensory notes (e.g. 'Bright acidity, lingering finish...')"></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `
+        };
+
+        const app = createApp({
+            components: { SampleCard },
+            setup() {
+                const session = ref({
+                    name: '',
+                    table: '01',
+                    date: new Date().toISOString(),
+                    samples: []
+                });
+                const showGuide = ref(false);
+
+                // Flavor Wheel Logic
+                const activeFlavorSampleId = ref(null);
+                const flavorPath = ref([]); // Stores array of selected objects from the tree
+                const selectedLeaf = ref(null); // Stores the leaf node if we are showing details
+
+                const currentFlavorOptions = computed(() => {
+                    let options = FLAVOR_DATA;
+
+                    // Traverse down the path
+                    for (const pathItemName of flavorPath.value) {
+                        const found = options.find(o => o.name === pathItemName);
+                        if (found && found.children) {
+                            options = found.children;
+                        } else {
+                            return [];
+                        }
+                    }
+
+                    return options;
+                });
+
+                // Helper to determine if we should show contrast text
+                const getTextColor = (hexColor) => {
+                    const r = parseInt(hexColor.substr(1, 2), 16);
+                    const g = parseInt(hexColor.substr(3, 2), 16);
+                    const b = parseInt(hexColor.substr(5, 2), 16);
+                    const yiq = ((r * 299) + (g * 587) + (b * 114)) / 1000;
+                    return (yiq >= 128) ? 'text-slate-800' : 'text-white text-shadow';
+                };
+
+                const openFlavorWheel = (id) => {
+                    activeFlavorSampleId.value = id;
+                    flavorPath.value = [];
+                    selectedLeaf.value = null;
+                };
+
+                const closeFlavorWheel = () => {
+                    activeFlavorSampleId.value = null;
+                    flavorPath.value = [];
+                    selectedLeaf.value = null;
+                };
+
+                const resetFlavorPath = () => {
+                    flavorPath.value = [];
+                    selectedLeaf.value = null;
+                }
+
+                const selectFlavorOption = (option) => {
+                    // If it has no children, it's a leaf node
+                    if (!option.children || option.children.length === 0) {
+                        // Check if it has metadata to show
+                        if (option.definition || option.reference) {
+                            selectedLeaf.value = option;
+                        } else {
+                            // Immediate selection if no details (or for missing data)
+                            confirmSelection(option);
+                        }
+                    } else {
+                        // Navigate deeper
+                        flavorPath.value.push(option.name);
+                    }
+                };
+
+                const confirmSelection = (option) => {
+                    const s = session.value.samples.find(x => x.id === activeFlavorSampleId.value);
+                    if (s && !s.tags.includes(option.name)) {
+                        s.tags.push(option.name);
+                    }
+                    closeFlavorWheel();
+                };
+
+                // Persistence
+                const STORAGE_KEY = 'sca-cupping-session';
+                onMounted(() => {
+                    const saved = localStorage.getItem(STORAGE_KEY);
+                    if (saved) {
+                        try {
+                            const parsed = JSON.parse(saved);
+                            session.value = parsed;
+                        } catch (e) { console.error('Corrupt save'); }
+                    }
+                    // Ensure at least one sample
+                    if (session.value.samples.length === 0) {
+                        addSample();
+                    }
+                });
+
+                watch(session, (newVal) => {
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify(newVal));
+                }, { deep: true });
+
+                // Actions
+                const addSample = () => {
+                    const id = session.value.samples.length + 1;
+                    session.value.samples.push({
+                        id,
+                        name: '',
+                        totalScore: 0,
+                        scores: {
+                            fragrance: 7,
+                            flavor: 7,
+                            aftertaste: 7,
+                            acidity: 7,
+                            body: 7,
+                            balance: 7,
+                            overall: 7,
+                            uniformity: [true, true, true, true, true],
+                            cleanCup: [true, true, true, true, true],
+                            sweetness: [true, true, true, true, true]
+                        },
+                        defects: { cups: 0, intensity: 2 },
+                        tags: [],
+                        notes: ''
+                    });
+                    const newS = session.value.samples[session.value.samples.length - 1];
+                    let total = (7 * 7) + 10 + 10 + 10;
+                    newS.totalScore = total;
+                };
+
+                const updateSample = (updated) => {
+                    const idx = session.value.samples.findIndex(s => s.id === updated.id);
+                    if (idx !== -1) session.value.samples[idx] = updated;
+                };
+
+                const deleteSample = (index) => {
+                    if (confirm('Delete this sample?')) {
+                        session.value.samples.splice(index, 1);
+                    }
+                };
+
+                const exportCSV = () => {
+                    const items = session.value.samples;
+                    if (!items.length) return;
+
+                    // Headers
+                    const headers = [
+                        'Sample ID', 'Name', 'Total Score',
+                        'Fragrance', 'Flavor', 'Aftertaste', 'Acidity', 'Body', 'Balance', 'Overall',
+                        'Uniformity Score', 'Clean Cup Score', 'Sweetness Score',
+                        'Defect Points', 'Tags', 'Notes'
+                    ];
+
+                    const csvContent = [
+                        headers.join(','),
+                        ...items.map(s => {
+                            const uniScore = s.scores.uniformity.filter(x => x).length * 2;
+                            const cleanScore = s.scores.cleanCup.filter(x => x).length * 2;
+                            const sweetScore = s.scores.sweetness.filter(x => x).length * 2;
+                            const defectScore = s.defects.cups * s.defects.intensity;
+                            return [
+                                s.id,
+                                `"${s.name.replace(/"/g, '""')}"`,
+                                s.totalScore.toFixed(2),
+                                s.scores.fragrance,
+                                s.scores.flavor,
+                                s.scores.aftertaste,
+                                s.scores.acidity,
+                                s.scores.body,
+                                s.scores.balance,
+                                s.scores.overall,
+                                uniScore,
+                                cleanScore,
+                                sweetScore,
+                                defectScore,
+                                `"${s.tags.join('; ')}"`,
+                                `"${s.notes.replace(/"/g, '""')}"`
+                            ].join(',')
+                        })
+                    ].join('\n');
+
+                    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                    const link = document.createElement("a");
+                    const url = URL.createObjectURL(blob);
+                    link.setAttribute("href", url);
+                    link.setAttribute("download", `cupping_session_${new Date().toISOString().slice(0, 10)}.csv`);
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                };
+
+                const formattedDate = computed(() => {
+                    return new Date().toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+                });
+
+                const leadingScore = computed(() => {
+                    if (!session.value.samples.length) return 0;
+                    return Math.max(...session.value.samples.map(s => s.totalScore));
+                });
+
+                return {
+                    session, showGuide, formattedDate, leadingScore,
+                    activeFlavorSampleId, flavorPath, currentFlavorOptions, getTextColor, selectedLeaf, confirmSelection,
+                    openFlavorWheel, closeFlavorWheel, selectFlavorOption, resetFlavorPath,
+                    addSample, updateSample, deleteSample, exportCSV
+                };
+            }
+        }).mount('#app');
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .then(registration => {
+                        console.log('ServiceWorker registration successful with scope: ', registration.scope);
+                    }, err => {
+                        console.log('ServiceWorker registration failed: ', err);
+                    });
+            });
+        }
+    </script>
+</body>
+
+</html>

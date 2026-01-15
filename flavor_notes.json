@@ -1,0 +1,142 @@
+[
+    {
+        "category": "Fruity",
+        "name": "Blackberry",
+        "description": "The sweet, dark, fruity, floral, slightly sour, somewhat woody aromatic associated with blackberries.",
+        "reference": "Smucker's Blackberry Jam",
+        "preparation": "Serve jam in a 1-ounce cup. Cover with a plastic lid."
+    },
+    {
+        "category": "Fruity",
+        "name": "Berry",
+        "description": "Sweet, sour, floral aromatic associated with berries.",
+        "reference": "Private Selection Triple Berry Preserves",
+        "preparation": "Place 1 teaspoon in a 1-ounce cup. Cover with a plastic lid."
+    },
+    {
+        "category": "Fruity",
+        "name": "Strawberry",
+        "description": "Sweet, slightly sour, floral, fruity aromatic associated with strawberry.",
+        "reference": "Dole Whole Strawberries (Frozen)",
+        "preparation": "Thaw strawberries. Serve at room temperature in cup."
+    },
+    {
+        "category": "Fruity",
+        "name": "Orange",
+        "description": "Citric, sweet, floral, slightly sour aromatic associated with oranges.",
+        "reference": "Tropicana Pure Premium Original 100% No Pulp",
+        "preparation": "Serve juice in a 1-ounce cup. Cover with a plastic lid."
+    },
+    {
+        "category": "Fruity",
+        "name": "Coconut",
+        "description": "Slightly sweet, nutty, somewhat woody aromatic.",
+        "reference": "Coconut imitation extract",
+        "preparation": "Place 1 drop of coconut extract on a cotton ball in a snifter."
+    },
+    {
+        "category": "Green/Veg",
+        "name": "Olive Oil",
+        "description": "Light, oily aromatic which may have buttery, green, peppery, bitter notes.",
+        "reference": "Bertolli Extra Virgin Olive Oil",
+        "preparation": "Put 1 tablespoon in a medium snifter. Cover."
+    },
+    {
+        "category": "Green/Veg",
+        "name": "Peapod",
+        "description": "Green aromatic that is sweet, beany, fresh, raw, and musty/earthy.",
+        "reference": "Le Nez du Café no. 3 'Garden Peas'",
+        "preparation": "Place 1 drop of essence on a cotton ball in a large snifter."
+    },
+    {
+        "category": "Nutty",
+        "name": "Peanuts",
+        "description": "Sweet, light brown, oily, somewhat musty/dusty aromatic.",
+        "reference": "Raw blanched bulk peanuts (Roasted)",
+        "preparation": "Roast at 425°F for 10 mins. Chop and serve."
+    },
+    {
+        "category": "Nutty",
+        "name": "Hazelnut",
+        "description": "Woody, brown, sweet, musty/earthy, slightly cedar aromatic.",
+        "reference": "McCormick Imitation Hazelnut Extract",
+        "preparation": "1/4 teaspoon extract in 1 cup of whole milk."
+    },
+    {
+        "category": "Nutty",
+        "name": "Almond",
+        "description": "Sweet, light brown, woody, and buttery aromatic.",
+        "reference": "Le Nez du Café no. 27 'Roasted Almonds'",
+        "preparation": "Place 1 drop of essence on a cotton ball."
+    },
+    {
+        "category": "Sweet",
+        "name": "Honey",
+        "description": "Sweet, light brown, slightly spicy aromatic.",
+        "reference": "Busy Bee Pure Clover Honey",
+        "preparation": "Dissolve 1 tbsp honey in 250ml hot water."
+    },
+    {
+        "category": "Sweet",
+        "name": "Vanilla",
+        "description": "Woody, slightly chemical aromatic associated with vanilla bean.",
+        "reference": "McCormick Pure Vanilla Extract",
+        "preparation": "Stir 1/8 tsp extract into 1/2 cup whole milk."
+    },
+    {
+        "category": "Sweet",
+        "name": "Molasses",
+        "description": "Dark, caramelized top notes; slightly sharp/acrid.",
+        "reference": "Grandma's Original Molasses (Unsulphured)",
+        "preparation": "Mix 2 tsp molasses in 250ml water."
+    },
+    {
+        "category": "Floral",
+        "name": "Jasmine",
+        "description": "Intense, slightly pungent, sweet, floral aromatic.",
+        "reference": "Jasmine extract",
+        "preparation": "Place 1 drop of extract on a cotton ball in a snifter."
+    },
+    {
+        "category": "Floral",
+        "name": "Rose",
+        "description": "Sweet, soft, slightly musty/dusty floral fragrance.",
+        "reference": "Rose water",
+        "preparation": "Place 2 drops of rose water on a cotton ball."
+    },
+    {
+        "category": "Spices",
+        "name": "Pepper",
+        "description": "Spicy, pungent, musty, woody aromatic.",
+        "reference": "McCormick Ground Black Pepper",
+        "preparation": "Place 1/2 teaspoon pepper in a medium snifter."
+    },
+    {
+        "category": "Roasted",
+        "name": "Tobacco",
+        "description": "Brown, slightly sweet, slightly pungent aromatic.",
+        "reference": "Camel Cigarettes (Turkish & Domestic)",
+        "preparation": "Break cigarette and place 0.1g tobacco in snifter."
+    },
+    {
+        "category": "Roasted",
+        "name": "Ashy",
+        "description": "Dry, dusty, dirty, smoky aromatic associated with burnt residue.",
+        "reference": "Paper ashes",
+        "preparation": "Burn white paper, place ashes in jar."
+    },
+    {
+        "category": "Chemical",
+        "name": "Rubber",
+        "description": "Dark, heavy, slightly sharp, pungent aromatic.",
+        "reference": "A&W Rubber Bands",
+        "preparation": "Place 10g of rubber bands in a snifter."
+    },
+    {
+        "category": "Chemical",
+        "name": "Skunky",
+        "description": "Aromatics associated with skunks.",
+        "reference": "Latex balloon",
+        "preparation": "Place 2 balloons in a glass jar."
+    }
+]
