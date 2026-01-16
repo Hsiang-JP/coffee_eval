@@ -968,13 +968,30 @@
                 </div>
 
                 <div class="p-6">
+                    <!-- Flavor Tags (Moved to Top) -->
+                    <div class="mb-8 bg-indigo-50/50 p-4 rounded-xl border border-indigo-50"> <!-- Increased padding and separation -->
+                         <div class="flex justify-between items-center mb-3">
+                             <label class="font-bold text-sm text-indigo-900 uppercase">Flavor Notes</label>
+                             <button @click="$emit('open-flavor', sample.id)" class="text-xs font-bold text-indigo-600 hover:text-indigo-800 bg-white px-3 py-1.5 rounded-full border border-indigo-100 shadow-sm transition-all hover:shadow">
+                                 + Add Note
+                             </button>
+                         </div>
+                         <div class="flex flex-wrap gap-2 min-h-[2rem]">
+                             <span v-if="!sample.tags.length" class="text-sm text-indigo-300 italic p-1">No flavor notes added yet...</span>
+                             <span v-for="(tag, i) in sample.tags" :key="i" class="bg-white text-indigo-700 px-3 py-1.5 rounded-lg text-sm font-medium border border-indigo-100 shadow-sm flex items-center gap-2">
+                                 {{ tag }}
+                                 <button @click="sample.tags.splice(i, 1)" class="text-indigo-400 hover:text-red-500 transition-colors"><i class="fa-solid fa-xmark"></i></button>
+                             </span>
+                         </div>
+                    </div>
+
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
                         <!-- Column 1: Sliders -->
-                        <div class="space-y-5">
-                            <div v-for="attr in attributes" :key="attr.key">
-                                <div class="flex justify-between mb-1.5">
-                                    <label class="font-semibold text-sm text-slate-600">{{ attr.label }}</label>
-                                    <span class="font-mono text-sm font-bold text-indigo-600">{{ sample.scores[attr.key].toFixed(2) }}</span>
+                        <div class="space-y-6"> <!-- Increased spacing -->
+                            <div v-for="attr in attributes" :key="attr.key" class="bg-white p-3 rounded-lg border border-transparent hover:border-gray-100 transition-colors">
+                                <div class="flex justify-between mb-2">
+                                    <label class="font-bold text-sm text-slate-700">{{ attr.label }}</label>
+                                    <span class="font-mono text-sm font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded">{{ sample.scores[attr.key].toFixed(2) }}</span>
                                 </div>
                                 <input 
                                     type="range" 
@@ -983,7 +1000,14 @@
                                     step="0.25" 
                                     :value="sample.scores[attr.key]" 
                                     @input="updateSlider(attr.key, $event.target.value)"
-                                    class="w-full h-2 bg-slate-100 rounded-lg appearance-none cursor-pointer"
+                                    class="w-full h-2 bg-slate-100 rounded-lg appearance-none cursor-pointer mb-3 accent-indigo-600"
+                                >
+                                <input 
+                                    v-if="sample.sectionNotes" 
+                                    v-model="sample.sectionNotes[attr.key]" 
+                                    type="text" 
+                                    class="w-full bg-slate-50 border-none rounded px-3 py-1.5 text-xs text-slate-600 placeholder-slate-400 focus:ring-1 ring-indigo-200 focus:bg-white transition-all"
+                                    :placeholder="'Note for ' + attr.label + '...'"
                                 >
                             </div>
                         </div>
@@ -991,56 +1015,61 @@
                         <!-- Column 2: Booleans & Defects -->
                         <div class="space-y-8">
                             <!-- Uniformity / Clean Cup / Sweetness -->
-                            <div v-for="attr in boolAttributes" :key="attr.key" class="bg-gray-50 p-4 rounded-lg">
-                                <label class="block font-semibold text-sm text-slate-600 mb-3">{{ attr.label }} (2pts each)</label>
-                                <div class="flex gap-2">
+                            <div v-for="attr in boolAttributes" :key="attr.key" class="bg-gray-50 p-4 rounded-xl border border-gray-100">
+                                <div class="flex justify-between items-center mb-3">
+                                    <label class="font-bold text-sm text-slate-700">{{ attr.label }} <span class="text-xs font-normal text-slate-400 ml-1">(2pts each)</span></label>
+                                </div>
+                                <div class="flex gap-2 mb-3">
                                     <button 
                                         v-for="(checked, i) in sample.scores[attr.key]" 
                                         :key="i"
                                         @click="toggleBool(attr.key, i)"
-                                        class="w-8 h-8 rounded border-2 flex items-center justify-center transition-all duration-200"
-                                        :class="checked ? 'bg-indigo-600 border-indigo-600 text-white' : 'bg-white border-slate-200 text-transparent hover:border-indigo-300'"
+                                        class="flex-1 h-10 rounded-lg border-2 flex items-center justify-center transition-all duration-200"
+                                        :class="checked ? 'bg-indigo-600 border-indigo-600 text-white shadow-md shadow-indigo-200' : 'bg-white border-slate-200 text-transparent hover:border-indigo-300'"
                                     >
-                                        <i class="fa-solid fa-check text-xs"></i>
+                                        <i class="fa-solid fa-check text-sm"></i>
                                     </button>
                                 </div>
+                                <input 
+                                    v-if="sample.sectionNotes" 
+                                    v-model="sample.sectionNotes[attr.key]" 
+                                    type="text" 
+                                    class="w-full bg-white border border-gray-200 rounded px-3 py-1.5 text-xs text-slate-600 placeholder-slate-400 focus:outline-none focus:border-indigo-300 transition-all"
+                                    :placeholder="'Note for ' + attr.label + '...'"
+                                >
                             </div>
 
                             <!-- Defects -->
-                            <div class="border-2 border-red-50 bg-red-50/30 rounded-lg p-4">
-                                <label class="block font-bold text-xs text-red-800 uppercase mb-3"><i class="fa-solid fa-triangle-exclamation mr-1"></i>Defects</label>
-                                <div class="flex items-center gap-4 mb-3">
+                            <div class="border-2 border-red-100 bg-red-50/50 rounded-xl p-5">
+                                <label class="block font-bold text-xs text-red-800 uppercase mb-4 tracking-wider"><i class="fa-solid fa-triangle-exclamation mr-1"></i>Defects</label>
+                                <div class="flex items-center gap-4 mb-4">
                                     <div class="flex-1">
-                                        <span class="text-xs text-slate-500 block mb-1"># Cups</span>
-                                        <input type="number" min="0" max="5" :value="sample.defects.cups" @input="updateDefectCups" class="w-full border-gray-200 rounded px-2 py-1 text-sm">
+                                        <span class="text-xs font-bold text-slate-500 block mb-1 uppercase"># Cups</span>
+                                        <input type="number" min="0" max="5" :value="sample.defects.cups" @input="updateDefectCups" class="w-full border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 ring-red-200 outline-none">
                                     </div>
                                     <div class="flex-1">
-                                         <span class="text-xs text-slate-500 block mb-1">Intensity</span>
-                                         <div class="flex bg-white rounded border border-gray-200 overflow-hidden">
-                                             <button @click="updateDefectIntensity(2)" class="flex-1 py-1 text-xs font-medium" :class="sample.defects.intensity === 2 ? 'bg-red-100 text-red-700' : 'hover:bg-gray-50'">Taint (2)</button>
+                                         <span class="text-xs font-bold text-slate-500 block mb-1 uppercase">Intensity</span>
+                                         <div class="flex bg-white rounded-lg border border-gray-200 overflow-hidden h-[38px]">
+                                             <button @click="updateDefectIntensity(2)" class="flex-1 text-xs font-bold transition-colors" :class="sample.defects.intensity === 2 ? 'bg-red-100 text-red-700' : 'text-slate-500 hover:bg-gray-50'">Taint (2)</button>
                                              <div class="w-px bg-gray-200"></div>
-                                             <button @click="updateDefectIntensity(4)" class="flex-1 py-1 text-xs font-medium" :class="sample.defects.intensity === 4 ? 'bg-red-100 text-red-700' : 'hover:bg-gray-50'">Fault (4)</button>
+                                             <button @click="updateDefectIntensity(4)" class="flex-1 text-xs font-bold transition-colors" :class="sample.defects.intensity === 4 ? 'bg-red-100 text-red-700' : 'text-slate-500 hover:bg-gray-50'">Fault (4)</button>
                                          </div>
                                     </div>
                                 </div>
+                                <input 
+                                    v-if="sample.sectionNotes" 
+                                    v-model="sample.sectionNotes.defects" 
+                                    type="text" 
+                                    class="w-full bg-white border border-red-200 rounded px-3 py-1.5 text-xs text-slate-600 placeholder-red-300 focus:outline-none focus:ring-1 ring-red-300 transition-all"
+                                    placeholder="Describe defect..."
+                                >
                             </div>
 
-                            <!-- Flavor Tags -->
-                            <div>
-                                <label class="block font-semibold text-sm text-slate-600 mb-2">Flavor Notes</label>
-                                <div class="flex flex-wrap gap-2 mb-2">
-                                    <span v-for="(tag, i) in sample.tags" :key="i" class="bg-indigo-50 text-indigo-700 px-2 py-1 rounded text-xs font-medium border border-indigo-100 flex items-center gap-1">
-                                        {{ tag }}
-                                        <button @click="sample.tags.splice(i, 1)" class="hover:text-indigo-900"><i class="fa-solid fa-xmark"></i></button>
-                                    </span>
-                                    <button @click="$emit('open-flavor', sample.id)" class="px-3 py-1 bg-white border border-dashed border-slate-300 rounded text-xs text-slate-500 hover:border-indigo-400 hover:text-indigo-600 transition-colors">
-                                        + Add Note
-                                    </button>
-                                </div>
-                            </div>
-
-                             <!-- Notes -->
-                             <textarea v-model="sample.notes" rows="2" class="w-full bg-white border border-gray-200 rounded-lg p-3 text-sm focus:ring-2 ring-indigo-100 focus:border-indigo-400 focus:outline-none" placeholder="Sensory notes (e.g. 'Bright acidity, lingering finish...')"></textarea>
+                             <!-- Overall Notes -->
+                             <div>
+                                <label class="block font-bold text-sm text-slate-700 mb-2">Overall Session Notes</label>
+                                <textarea v-model="sample.notes" rows="3" class="w-full bg-white border border-gray-200 rounded-xl p-4 text-sm focus:ring-2 ring-indigo-100 focus:border-indigo-400 focus:outline-none transition-shadow" placeholder="General observations, roast level, processing notes..."></textarea>
+                             </div>
                         </div>
                     </div>
                 </div>
@@ -1137,6 +1166,15 @@
                     if (saved) {
                         try {
                             const parsed = JSON.parse(saved);
+                            // MIGRATION: Ensure all samples have sectionNotes
+                            parsed.samples.forEach(s => {
+                                if (!s.sectionNotes) {
+                                    s.sectionNotes = {
+                                        fragrance: '', flavor: '', aftertaste: '', acidity: '', body: '', balance: '', overall: '',
+                                        uniformity: '', cleanCup: '', sweetness: '', defects: ''
+                                    };
+                                }
+                            });
                             session.value = parsed;
                         } catch (e) { console.error('Corrupt save'); }
                     }
@@ -1170,6 +1208,10 @@
                             sweetness: [true, true, true, true, true]
                         },
                         defects: { cups: 0, intensity: 2 },
+                        sectionNotes: {
+                            fragrance: '', flavor: '', aftertaste: '', acidity: '', body: '', balance: '', overall: '',
+                            uniformity: '', cleanCup: '', sweetness: '', defects: ''
+                        },
                         tags: [],
                         notes: ''
                     });
